@@ -1,12 +1,14 @@
 package com.aspora.weather.exception;
 
 import com.aspora.weather.dto.ErrorResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 
+@Hidden
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
