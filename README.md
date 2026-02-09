@@ -212,35 +212,6 @@ http://localhost:8080/swagger-ui/index.html
 
 ### Prerequisites
 
-* Java **17+**
-* Maven **3.8+**
-* Internet access (for Open‑Meteo API)
-
-### Setup & Run
-
-```bash
-mvn clean install
-mvn spring-boot:run
-```
-
-The application will start at:
-
-```
-http://localhost:8080
-```
-
-Swagger UI:
-
-```
-http://localhost:8080/swagger-ui/index.html
-```
-
----
-
-## ⚙️ Setup Instructions
-
-### Prerequisites
-
 * Java 17 or higher installed
 * Maven 3.x (optional – Maven Wrapper is included)
 * Internet connection (required for Open-Meteo API)
