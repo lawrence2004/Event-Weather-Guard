@@ -1,200 +1,228 @@
-🌦️ Event Weather Guard – Backend Service
-Overview
+🌦️ Event Weather Guard
 
-Event Weather Guard is a stateless backend service that evaluates weather conditions for outdoor events and determines whether the event is Safe, Risky, or Unsafe to proceed.
+Event Weather Guard is a Spring Boot backend service that analyzes hourly weather forecasts for outdoor events and determines whether an event is Safe, Risky, or Unsafe using deterministic and explainable rules.
 
-The service:
+This project was built as a Backend Intern take-home assignment, with emphasis on:
 
-Accepts event details (location and time window)
+Clean API design
 
-Fetches hourly weather forecasts from a public weather API
+External API integration
 
-Applies deterministic and explainable rules
+Validation & edge-case handling
 
-Returns a structured advisory with reasons and supporting forecast data
+Clear business logic and explainability
 
-The project focuses on correct time-window handling, explainability, edge-case handling, and clean API design.
+🚀 Features
 
-Tech Stack
+REST API to evaluate weather risk for outdoor events
+
+Integration with Open-Meteo public weather API (hourly forecasts)
+
+Deterministic classification rules (Safe / Risky / Unsafe)
+
+Numeric severity score (0–100) for risk quantification
+
+Clear, human-readable explanations in responses
+
+Input validation with structured error responses
+
+Layered architecture (Controller → Service → Client → Rule Engine)
+
+Optional Swagger / OpenAPI documentation
+
+No database or authentication (as per assignment requirements)
+
+🛠️ Tech Stack
 
 Java 17
 
-Spring Boot
+Spring Boot 3.x
 
-REST API
+Spring MVC
 
-Open-Meteo Weather API (public, no API key required)
+RestTemplate (blocking external API calls)
 
-Maven
+Jakarta Bean Validation
 
-Swagger / OpenAPI (optional documentation)
+Lombok
 
-Project Structure
-src/main/java/com/aspora/weather
-├── controller
-├── service
-├── util
-├── dto
-├── exception
-├── config
-└── WeatherApplication.java
+Springdoc OpenAPI (Swagger UI)
 
-Setup & Execution
-Prerequisites
-
-Java 17+
-
-Git
-
-Internet connection (for weather API)
-
-Clone the Repository
-git clone <your-github-repo-url>
-cd Event-Weather-Guard-main
-
-Run the Application
-✅ Windows (PowerShell)
-.\mvnw.cmd spring-boot:run
-
-macOS / Linux
-./mvnw spring-boot:run
-
-Alternative (if Maven is installed globally)
-mvn spring-boot:run
-
-Successful Startup Log
-Tomcat started on port 8080
-Started WeatherApplication in X seconds
-
-API Usage
-Endpoint
+📦 API Endpoint
 POST /event-forecast
 
-Request Body
+
+Evaluates weather conditions during the given event time window and returns a weather advisory.
+
+📤 API Usage Examples
+Example 1: Safe Event
+Request
 {
-  "name": "Football Match",
+  "name": "Morning Yoga",
   "location": {
     "latitude": 19.0760,
     "longitude": 72.8777
   },
-  "startTime": "2026-02-09T17:00:00",
-  "endTime": "2026-02-09T19:00:00"
+  "startTime": "2026-02-05T06:00:00",
+  "endTime": "2026-02-05T08:00:00"
 }
 
-Sample Response
+Response
 {
-  "classification": "Risky",
-  "severityScore": 62,
-  "summary": "High chance of rain during multiple hours of the event",
+  "classification": "Safe",
+  "severityScore": 6,
+  "summary": "Weather conditions are suitable throughout the event duration",
   "reason": [
-    "Thunderstorm expected from 16:00 to 18:00",
-    "High rain probability from 16:00 to 19:00",
-    "Strong wind (~31 km/h) from 16:00 to 19:00"
+    "No significant weather risks detected"
   ],
   "eventWindowForecast": [
-    { "time": "16:00", "rainProb": 4, "windKmh": 31.1 },
-    { "time": "17:00", "rainProb": 4, "windKmh": 32.0 },
-    { "time": "18:00", "rainProb": 3, "windKmh": 30.6 },
-    { "time": "19:00", "rainProb": 3, "windKmh": 27.4 }
+    { "time": "06:00", "rainProb": 0, "windKmh": 4.5 },
+    { "time": "07:00", "rainProb": 0, "windKmh": 1.5 },
+    { "time": "08:00", "rainProb": 0, "windKmh": 8.0 }
   ]
 }
 
-Weather Classification Rules
+Example 2: Risky Event
+Request
+{
+  "name": "Football Match",
+  "location": {
+    "latitude": 52.52,
+    "longitude": 13.41
+  },
+  "startTime": "2026-02-05T17:00:00",
+  "endTime": "2026-02-05T19:00:00"
+}
+
+Response
+{
+  "classification": "Risky",
+  "severityScore": 46,
+  "summary": "High chance of rain during multiple hours of the event",
+  "reason": [
+    "High rain probability from 17:00 to 19:00"
+  ],
+  "eventWindowForecast": [
+    { "time": "17:00", "rainProb": 53, "windKmh": 10.8 },
+    { "time": "18:00", "rainProb": 38, "windKmh": 10.4 },
+    { "time": "19:00", "rainProb": 63, "windKmh": 10.8 }
+  ]
+}
+
+⚖️ Weather Classification Rules
+
+The system applies deterministic rules on hourly forecast data.
+
 ❌ Unsafe
 
 An event is classified as Unsafe if any hour during the event window has:
 
-Thunderstorm forecast (weatherCode ≥ 95)
+Rain probability ≥ 80%, or
 
-Rain probability ≥ 80%
+Wind speed ≥ 40 km/h, or
 
-Wind speed ≥ 40 km/h
+Thunderstorm forecast
 
 ⚠️ Risky
 
 An event is classified as Risky if any hour has:
 
-Rain probability between 60% – 79%
+Rain probability between 60%–79%, or
 
-Wind speed between 25 – 39 km/h
+Wind speed between 25–39 km/h
 
 ✅ Safe
 
 No risky or unsafe conditions detected during the event window.
 
-Severity Score (0–100)
+Each response includes human-readable reasons explaining which rule(s) were triggered.
 
-In addition to categorical classification, a numeric severity score is calculated.
+🎯 Severity Score (0–100)
 
-Scoring Model
-Factor	Max Score
-Rain probability	40
-Wind speed	30
-Thunderstorm presence	30
-Total	100
+In addition to categorical classification, a numeric severity score is computed to represent overall weather risk.
 
-The score reflects the worst expected conditions during the event window.
+Scoring Logic
 
-It complements the Safe / Risky / Unsafe classification.
+Rain contribution (0–40)
 
-Explainability Strategy
+Wind contribution (0–30)
 
-To improve clarity and avoid noisy responses:
+Thunderstorm contribution (0–30)
 
-Similar conditions across consecutive hours are grouped into time ranges
+The final severity score reflects the worst expected conditions during the event window and does not override the Safe / Risky / Unsafe classification.
 
-Large changes in severity are reported separately
+🧠 Design Overview
 
-Example:
+Controller
+Handles HTTP requests and input validation
 
-Thunderstorm expected from 16:00 to 19:00
+Service Layer
+Orchestrates workflow, validates business rules, builds responses
 
-Edge Case Handling
+Weather API Client
+Encapsulates external integration with Open-Meteo
 
-The service explicitly handles:
+Classification Engine
+Applies deterministic weather risk rules
 
-Past event dates
-→ Rejected (forecast data is future-only)
+DTOs
+Clean request/response models with validation
 
-Invalid time ranges
-→ End time earlier than start time
+Global Exception Handler
+Centralized, structured error handling
 
-Forecast range limitation
-→ Forecast supported only for the next 7 days
+This separation keeps the system clean, testable, and easy to explain.
 
-Unavailable forecast data
-→ Clear error response returned
+⚙️ Setup Instructions
+Prerequisites
 
-All errors are returned as structured JSON using a global exception handler.
+Java 17+
 
-Key Assumptions & Trade-offs
+Maven 3+
 
-Event times are assumed to be in the local timezone of the event location
+Internet access (for Open-Meteo API)
 
-Weather data is fetched in real time; no persistence is used
+Build & Run
+mvn clean install
+mvn spring-boot:run
 
-The service is stateless by design
 
-Severity score is heuristic-based, not a meteorological prediction
+The application starts at:
 
-Forecast availability is limited to 7 days
+http://localhost:8080
 
-API Documentation (Optional)
+📘 Swagger / OpenAPI
 
-Swagger UI is available at:
+Interactive API documentation is available at:
 
 http://localhost:8080/swagger-ui/index.html
 
-Conclusion
+⚠️ Validation & Error Handling
 
-This project demonstrates:
+Request fields validated using Bean Validation
 
-Correct handling of time-window weather forecasts
+Logical checks:
 
-Deterministic and explainable decision-making
+startTime must be in the future
 
-Clean REST API design
+endTime must be after startTime
 
-Robust edge-case handling
+Forecasts supported only for the next 7 days
 
-Professional documentation
+Errors returned as structured JSON with clear messages
+
+🔍 Key Assumptions & Trade-offs
+
+Weather data is evaluated hourly
+
+Event times are assumed to be in the local timezone of the event location
+
+Forecast availability is limited to 7 days
+
+Classification logic is rule-based for transparency
+
+Severity score is heuristic, not meteorological
+
+No persistence or authentication (out of scope)
+
+Focus is on service-layer business logic rather than controller tests
