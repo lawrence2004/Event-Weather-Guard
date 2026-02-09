@@ -10,7 +10,7 @@ import java.util.List;
 @Builder
 @JsonPropertyOrder({
         "classification",
-        "severity",
+        "severityScore",
         "summary",
         "reason",
         "eventWindowForecast"
