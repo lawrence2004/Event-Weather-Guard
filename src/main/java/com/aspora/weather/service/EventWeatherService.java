@@ -14,6 +14,7 @@ import com.aspora.weather.util.WeatherClassificationEngine;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -28,11 +29,27 @@ public class EventWeatherService {
         this.engine = engine;
     }
 
+    private static final int MAX_FORECAST_DAYS = 7;
+
     public EventResponse analyzeEvent(EventRequest request) {
 
-        if(request.getEndTime().isBefore(request.getStartTime())) {
+        if(request.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new InvalidDateException(
+                    "Event start time must be in the future",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        if (request.getEndTime().isBefore(request.getStartTime())) {
             throw new InvalidDateException(
                     "Event start time cannot be greater than end time",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        if (request.getStartTime().isAfter(LocalDateTime.now().plusDays(MAX_FORECAST_DAYS))) {
+            throw new InvalidDateException(
+                    "Weather forecast is available only for the next " + MAX_FORECAST_DAYS + " days",
                     HttpStatus.BAD_REQUEST
             );
         }
