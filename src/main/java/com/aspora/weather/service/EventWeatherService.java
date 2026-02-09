@@ -29,7 +29,7 @@ public class EventWeatherService {
         this.engine = engine;
     }
 
-    private static final int MAX_FORECAST_DAYS = 7;
+    private static final int MAX_FORECAST_DAYS = 6;
 
     public EventResponse analyzeEvent(EventRequest request) {
 
