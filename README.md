@@ -156,34 +156,6 @@ The system applies **deterministic, explainable rules** based on hourly weather 
 
 ### ❌ Unsafe
 
-* Rain probability **> 80%** during any event hour, OR
-* Wind speed **> 40 km/h** during any event hour
-
-### ⚠️ Risky
-
-* Rain probability **> 60%** during any event hour
-
-### ✅ Safe
-
-* None of the above conditions are met
-
-### 🎯 Severity Score (0–100)
-
-In addition to classification, a numeric severity score is computed:
-
-* Rain severity = rain probability (0–100)
-* Wind severity = normalized to 0–100 (50 km/h treated as extreme)
-* Hourly severity = `0.6 × rain + 0.4 × wind`
-* Event severity = **maximum hourly severity** (worst‑case driven)
-
-Severity score is **additive** and does not override classification rules.
-
----
-
-The service classifies events using **deterministic rules**:
-
-### ❌ Unsafe
-
 * Thunderstorm forecast detected
 * Rain probability ≥ **80%**
 * Wind speed ≥ **40 km/h**
@@ -198,6 +170,18 @@ The service classifies events using **deterministic rules**:
 * No Unsafe or Risky conditions are detected during the event window
 
 Each response includes **human‑readable reasons** explaining which rule(s) were triggered.
+
+### 🎯 Severity Score (0–100)
+
+In addition to classification, a numeric severity score is computed:
+
+* Rain severity contributes up to 40 points, proportional to rain probability
+* Wind severity contributes up to 30 points, with 50 km/h treated as extreme
+* Thunderstorm presence contributes a fixed 30 points if detected
+* Event severity is calculated using the worst-case hour within the event window
+* Severity score is **additive** and does not override classification rules.
+
+---
 
 ---
 
